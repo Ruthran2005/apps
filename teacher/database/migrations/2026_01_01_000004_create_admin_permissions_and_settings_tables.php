@@ -11,16 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->json('permissions')->nullable()->after('role'); // e.g. ['dashboard', 'students', 'teachers', ...]
-        });
+        if (Schema::hasTable('users') && !Schema::hasColumn('users', 'permissions')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->json('permissions')->nullable()->after('role');
+            });
+        }
 
-        Schema::create('school_settings', function (Blueprint $table) {
-            $table->id();
-            $table->string('key')->unique();
-            $table->text('value')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('school_settings')) {
+            Schema::create('school_settings', function (Blueprint $table) {
+                $table->id();
+                $table->string('key')->unique();
+                $table->text('value')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

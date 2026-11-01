@@ -11,6 +11,7 @@ use App\Models\Timetable;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,6 +20,16 @@ class StudentController extends Controller
     // Active student context (Alex Morgan default or switchable)
     protected function getActiveStudent(Request $request)
     {
+        if (Auth::check() && Auth::user()->role === 'student') {
+            $userStudent = Student::with(['user', 'schoolClass', 'section'])
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if ($userStudent) {
+                return $userStudent;
+            }
+        }
+
         $studentId = $request->session()->get('active_student_id', 1);
         return Student::with(['user', 'schoolClass', 'section'])
             ->find($studentId) ?? Student::first();
@@ -79,8 +90,9 @@ class StudentController extends Controller
         // 4. School Announcements
         $announcements = Announcement::whereIn('audience', ['all', 'students'])
             ->latest()
-            ->take(3)
+            ->take(4)
             ->get();
+        $announcementsCount = Announcement::whereIn('audience', ['all', 'students'])->count();
 
         return view('student.dashboard', compact(
             'student',
@@ -92,7 +104,8 @@ class StudentController extends Controller
             'dayOfWeek',
             'assignments',
             'completedHomeworkCount',
-            'announcements'
+            'announcements',
+            'announcementsCount'
         ));
     }
 
@@ -100,7 +113,7 @@ class StudentController extends Controller
     public function timetable(Request $request)
     {
         $student = $this->getActiveStudent($request);
-        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
         $schedule = Timetable::with(['subject', 'teacher.user'])
             ->where('school_class_id', $student->school_class_id)

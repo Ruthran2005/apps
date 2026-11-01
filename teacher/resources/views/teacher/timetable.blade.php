@@ -15,7 +15,10 @@
         <div class="flex items-center gap-2">
             <span class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 text-emerald-800 font-semibold text-xs border border-emerald-200/60 shadow-sm">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Semester 1 Schedule
+                {{ $schedule->flatten()->count() }} {{ \Illuminate\Support\Str::plural('Period', $schedule->flatten()->count()) }} Assigned
+            </span>
+            <span class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-100 text-slate-700 font-semibold text-xs border border-slate-200/70 shadow-2xs">
+                👨‍🏫 {{ $teacher->user->name }}
             </span>
         </div>
     </div>
